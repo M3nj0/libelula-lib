@@ -5,6 +5,8 @@
  */
 package me.libelula;
 
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.TreeMap;
 import org.bukkit.Location;
 
@@ -14,10 +16,12 @@ import org.bukkit.Location;
  */
 public class Locations {
 
-    TreeMap<Integer, Location> keyLocation;
+    private TreeMap<Integer, Location> keyLocation;
+    private Iterator<Location> LocationIterator;
 
     public Locations() {
         keyLocation = new TreeMap<>();
+        LocationIterator = keyLocation.values().iterator();
     }
 
     /**
@@ -33,6 +37,7 @@ public class Locations {
             result = false;
         } else {
             keyLocation.put(key, location);
+            LocationIterator = keyLocation.values().iterator();
         }
         return result;
     }
@@ -43,13 +48,14 @@ public class Locations {
      * @param location The location to be inserted
      */
     public void addLocation(Location location) {
-        Integer key = keyLocation.lastKey();
-        if (key != null) {
-            key++;
-        } else {
+        Integer key;
+        try {
+            key = keyLocation.lastKey() + 1;
+        } catch (NoSuchElementException e) {
             key = 0;
         }
         keyLocation.put(key, location);
+        LocationIterator = keyLocation.values().iterator();
     }
 
     /**
@@ -108,12 +114,13 @@ public class Locations {
                 }
             }
         }
-        
+
         return result;
     }
 
     /**
      * checks if the object contains a location
+     *
      * @param location given location
      * @return true if location exists, false if not
      */
@@ -123,11 +130,27 @@ public class Locations {
 
     /**
      * checks if the object contains a block location
+     *
      * @param location given block location
      * @return true if block location exists, false if not
      */
     public boolean hasBlockLocation(Location location) {
         return hasLocation(location, false);
+    }
+
+    /**
+     * implements a circular list with the locations 
+     * @return next location from list and first one after last one. If list is empty returns null
+     */
+    public Location getNextLocation() {
+        Location result = null;
+        if (!keyLocation.isEmpty()) {
+            if (!LocationIterator.hasNext()) {
+                LocationIterator = keyLocation.values().iterator();
+            }
+            result = LocationIterator.next();
+        }
+        return result;
     }
 
 }
